@@ -1,11 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import logging
 from .database import engine, Base
 from .api import employees, attendance, auth
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Create database tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created successfully")
+except Exception as e:
+    logger.error(f"Error creating database tables: {e}")
 
 app = FastAPI(
     title="HRMS Lite API",
@@ -16,6 +25,7 @@ app = FastAPI(
 # Configure CORS
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 origins = [origin.strip() for origin in allowed_origins if origin.strip()]
+logger.info(f"CORS origins: {origins}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,6 +39,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(employees.router)
 app.include_router(attendance.router)
+logger.info("Routers registered successfully")
 
 @app.get("/")
 def read_root():
