@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from ..database import get_db
@@ -11,6 +11,27 @@ from ..utils.auth import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
+
+# CORS preflight handlers
+@router.options("/register")
+async def options_register():
+    """Handle CORS preflight for register endpoint."""
+    return Response(status_code=200, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "86400",
+    })
+
+@router.options("/login")
+async def options_login():
+    """Handle CORS preflight for login endpoint."""
+    return Response(status_code=200, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "86400",
+    })
 
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
