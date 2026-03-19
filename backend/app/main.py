@@ -31,11 +31,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
-# Include routers
+logger.info(f"CORS middleware configured with methods: {['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']}")
+logger.info(f"CORS middleware configured with origins: {origins}")
 app.include_router(auth.router)
 app.include_router(employees.router)
 app.include_router(attendance.router)
