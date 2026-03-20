@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import logging
@@ -22,10 +22,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
-origins = [origin.strip() for origin in allowed_origins if origin.strip()]
-logger.info(f"CORS origins: {origins}")
+# 🔧 GUARANTEED CORS FIX - Allow all origins temporarily to debug
+# TODO: Change back to specific origins after debugging
+allowed_origins = ["*"]  # Allow all origins
+origins = allowed_origins
+logger.info(f"CORS DEBUG: ALLOWED_ORIGINS env var: {os.getenv('ALLOWED_ORIGINS')}")
+logger.info(f"CORS DEBUG: Using origins: {origins}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,6 +40,23 @@ app.add_middleware(
 
 logger.info(f"CORS middleware configured with methods: {['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']}")
 logger.info(f"CORS middleware configured with origins: {origins}")
+
+# 🔧 OPTIONAL: Global OPTIONS handler for stubborn CORS issues
+@app.options("/{full_path:path}")
+async def handle_options(request: Request, full_path: str):
+    """Global OPTIONS handler for CORS preflight requests."""
+    logger.info(f"Global OPTIONS handler: {request.method} {full_path}")
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+        }
+    )
+
+# Include routers AFTER CORS middleware
 app.include_router(auth.router)
 app.include_router(employees.router)
 app.include_router(attendance.router)
@@ -50,3 +69,12 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+@app.get("/cors-test")
+def cors_test():
+    """Test endpoint for CORS verification."""
+    return {
+        "message": "CORS is working",
+        "methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "headers": "Content-Type, Authorization"
+    }
