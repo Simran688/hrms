@@ -12,27 +12,6 @@ from ..models.user import User
 
 router = APIRouter(prefix="/api/employees", tags=["employees"])
 
-# CORS preflight handlers
-@router.options("/")
-async def options_employees():
-    """Handle CORS preflight for employees endpoint."""
-    return Response(status_code=200, headers={
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Max-Age": "86400",
-    })
-
-@router.options("/{employee_id}")
-async def options_employee_detail(employee_id: int):
-    """Handle CORS preflight for employee detail endpoint."""
-    return Response(status_code=200, headers={
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Max-Age": "86400",
-    })
-
 @router.post("/", response_model=EmployeeResponse, status_code=201)
 def create_new_employee(
     employee: EmployeeCreate, 
