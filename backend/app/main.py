@@ -9,12 +9,21 @@ from .api import employees, attendance, auth
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create database tables
+# Force create database tables with detailed logging
 try:
+    logger.info("Starting database table creation...")
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created successfully")
+    
+    # Verify tables exist
+    from sqlalchemy import inspect
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+    logger.info(f"Tables in database: {tables}")
+    
 except Exception as e:
     logger.error(f"Error creating database tables: {e}")
+    logger.error(f"Database URL: {os.getenv('DATABASE_URL', 'Not set')}")
 
 app = FastAPI(
     title="HRMS Lite API",
