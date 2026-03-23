@@ -61,10 +61,22 @@ def get_employee_attendance(
     
     attendance = get_attendance_by_employee(db, employee_id)
     
+    # Convert Attendance models to dicts for Pydantic response
+    attendance_list = []
+    for record in attendance:
+        attendance_dict = {
+            "id": record.id,
+            "employee_id": record.employee_id,
+            "date": record.date,
+            "status": record.status,
+            "created_at": record.created_at
+        }
+        attendance_list.append(attendance_dict)
+    
     # Filter by date range if provided
     if start_date or end_date:
         filtered_attendance = []
-        for record in attendance:
+        for record in attendance_list:
             if start_date and record.date < start_date:
                 continue
             if end_date and record.date > end_date:
@@ -72,7 +84,7 @@ def get_employee_attendance(
             filtered_attendance.append(record)
         return filtered_attendance
     
-    return attendance
+    return attendance_list
 
 @router.get("/{employee_id}/stats", response_model=AttendanceStats)
 def get_employee_attendance_stats(
