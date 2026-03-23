@@ -71,7 +71,14 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     
     logger.info(f"User created successfully: {user.email}")
-    return db_user
+        
+    # Convert User model to dict for Pydantic response
+    user_dict = {
+        "id": db_user.id,
+        "email": db_user.email,
+        "created_at": db_user.created_at
+    }
+    return user_dict
 
 @router.post("/login", response_model=Token)
 def login_user(user_credentials: UserLogin, db: Session = Depends(get_db)):
