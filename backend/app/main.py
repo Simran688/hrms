@@ -50,21 +50,6 @@ app.add_middleware(
 logger.info(f"CORS middleware configured with methods: {['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']}")
 logger.info(f"CORS middleware configured with origins: {origins}")
 
-# 🔧 OPTIONAL: Global OPTIONS handler for stubborn CORS issues
-@app.options("/{full_path:path}")
-async def handle_options(request: Request, full_path: str):
-    """Global OPTIONS handler for CORS preflight requests."""
-    logger.info(f"Global OPTIONS handler: {request.method} {full_path}")
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Max-Age": "86400",
-        }
-    )
-
 # Include routers AFTER CORS middleware
 app.include_router(auth.router)
 app.include_router(employees.router)
