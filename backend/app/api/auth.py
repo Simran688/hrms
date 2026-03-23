@@ -36,8 +36,13 @@ async def options_login():
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """Register a new user."""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Register API called with email: {user.email}, password length: {len(user.password)}")
+    
     # Check if user already exists
     if get_user_by_email(db, user.email):
+        logger.warning(f"Email already registered: {user.email}")
         raise HTTPException(
             status_code=400,
             detail="Email already registered"
@@ -45,6 +50,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     
     # Validate password length (before bcrypt limit)
     if len(user.password) > 72:
+        logger.error(f"Password too long: {len(user.password)} characters")
         raise HTTPException(
             status_code=400,
             detail="Password cannot be longer than 72 characters"
@@ -52,6 +58,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     
     # Truncate password to 72 bytes for bcrypt compatibility
     password_to_hash = user.password[:72]
+    logger.info(f"Password truncated to {len(password_to_hash)} bytes")
     
     # Create new user
     hashed_password = get_password_hash(password_to_hash)
@@ -63,6 +70,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     
+    logger.info(f"User created successfully: {user.email}")
     return db_user
 
 @router.post("/login", response_model=Token)
