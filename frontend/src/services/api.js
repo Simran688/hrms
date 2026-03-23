@@ -27,6 +27,22 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+    
+    // Handle 500 errors (server errors)
+    if (error.response?.status === 500) {
+      console.error('Server Error:', error.response?.data?.detail || 'Internal server error');
+    }
+    
+    // Handle 400 errors (validation errors)
+    if (error.response?.status === 400) {
+      console.error('Validation Error:', error.response?.data?.detail || 'Bad request');
+    }
+    
+    // Handle 404 errors (not found)
+    if (error.response?.status === 404) {
+      console.error('Not Found:', error.response?.data?.detail || 'Resource not found');
+    }
+    
     return Promise.reject(error);
   }
 );

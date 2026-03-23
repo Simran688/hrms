@@ -12,7 +12,13 @@ export const useApi = (apiCall, dependencies = []) => {
       const response = await apiCall();
       setData(response.data);
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'An error occurred');
+      const errorMessage = err.response?.data?.detail || err.message || 'An error occurred';
+      setError(errorMessage);
+      console.error('API Error:', {
+        status: err.response?.status,
+        message: errorMessage,
+        url: err.config?.url
+      });
     } finally {
       setLoading(false);
     }
@@ -41,6 +47,11 @@ export const useMutation = (apiCall) => {
     } catch (err) {
       const errorMessage = err.response?.data?.detail || err.message || 'An error occurred';
       setError(errorMessage);
+      console.error('Mutation Error:', {
+        status: err.response?.status,
+        message: errorMessage,
+        url: err.config?.url
+      });
       throw err;
     } finally {
       setLoading(false);
