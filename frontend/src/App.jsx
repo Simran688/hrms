@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/Layout';
 import EmployeeForm from './components/EmployeeForm';
 import EmployeeList from './components/EmployeeList';
@@ -11,7 +13,24 @@ import RegisterPage from './components/Auth/RegisterPage';
 import { employeeAPI } from './services/api';
 
 const Dashboard = () => {
-  const { data: employees } = employeeAPI.getAll();
+  const [employeeCount, setEmployeeCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchEmployeeCount = async () => {
+      try {
+        const response = await employeeAPI.getAll();
+        setEmployeeCount(response.data?.length || 0);
+      } catch (err) {
+        console.error('Failed to fetch employee count:', err);
+        setEmployeeCount(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchEmployeeCount();
+  }, []);
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -25,7 +44,9 @@ const Dashboard = () => {
           <div className="ml-5 w-0 flex-1">
             <dl>
               <dt className="text-sm font-medium text-gray-500 truncate">Total Employees</dt>
-              <dd className="text-lg font-medium text-gray-900">{employees?.length || 0}</dd>
+              <dd className="text-lg font-medium text-gray-900">
+                {loading ? '...' : employeeCount}
+              </dd>
             </dl>
           </div>
         </div>
@@ -125,41 +146,54 @@ const AttendancePage = () => {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        
-        {/* Protected routes */}
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout>
-              <Dashboard />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/employees" element={
-          <ProtectedRoute>
-            <Layout>
-              <EmployeesPage />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/attendance" element={
-          <ProtectedRoute>
-            <Layout>
-              <AttendancePage />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        
-        {/* Redirect root to dashboard */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Protected routes */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/employees" element={
+            <ProtectedRoute>
+              <Layout>
+                <EmployeesPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/attendance" element={
+            <ProtectedRoute>
+              <Layout>
+                <AttendancePage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          {/* Redirect root to dashboard */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+    </>
   );
 }
 

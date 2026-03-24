@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { employeeAPI } from '../services/api';
 import { useMutation, useApi } from '../hooks/useApi';
 
@@ -22,6 +23,13 @@ const EmployeeForm = ({ onSuccess, employee = null }) => {
       setFormData(employee);
     }
   }, [nextIdData, employee]);
+
+  // Show error toast when mutation error occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -47,13 +55,17 @@ const EmployeeForm = ({ onSuccess, employee = null }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast.error('Please fix the form errors before submitting');
+      return;
+    }
     
     try {
       await createEmployee(formData);
+      toast.success(employee ? 'Employee updated successfully!' : 'Employee created successfully!');
       onSuccess && onSuccess();
     } catch (err) {
-      // Error is handled by useMutation hook
+      // Error is handled by useMutation hook and shown via toast
     }
   };
 
@@ -70,12 +82,6 @@ const EmployeeForm = ({ onSuccess, employee = null }) => {
       <h2 className="text-lg font-medium text-gray-900 mb-6">
         {employee ? 'Edit Employee' : 'Add New Employee'}
       </h2>
-      
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-600 text-sm">{error}</p>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -95,7 +101,7 @@ const EmployeeForm = ({ onSuccess, employee = null }) => {
 
         <div>
           <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
-            Full Name
+            Full Name *
           </label>
           <input
             type="text"
@@ -114,7 +120,7 @@ const EmployeeForm = ({ onSuccess, employee = null }) => {
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Email
+            Email *
           </label>
           <input
             type="email"
@@ -133,7 +139,7 @@ const EmployeeForm = ({ onSuccess, employee = null }) => {
 
         <div>
           <label htmlFor="department" className="block text-sm font-medium text-gray-700">
-            Department
+            Department *
           </label>
           <select
             id="department"

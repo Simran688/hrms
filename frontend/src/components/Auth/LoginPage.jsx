@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import authAPI from '../../services/auth';
 
 const LoginPage = () => {
@@ -40,10 +41,13 @@ const LoginPage = () => {
       // Store JWT token
       localStorage.setItem('token', response.data.access_token);
       
+      toast.success('Login successful!');
+      
       // Redirect to dashboard
       navigate('/');
     } catch (err) {
       const errorMessage = err.response?.data?.detail || 'Login failed';
+      toast.error(errorMessage);
       setErrors({ general: errorMessage });
     } finally {
       setLoading(false);

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { employeeAPI, attendanceAPI } from '../services/api';
 import { useApi, useMutation } from '../hooks/useApi';
 
@@ -12,6 +13,13 @@ const AttendanceForm = ({ onSuccess }) => {
 
   const { data: employees, loading: loadingEmployees } = useApi(employeeAPI.getAll);
   const { mutate: markAttendance, loading, error } = useMutation(attendanceAPI.create);
+
+  // Show error toast when mutation error occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -31,10 +39,14 @@ const AttendanceForm = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast.error('Please fix the form errors before submitting');
+      return;
+    }
     
     try {
       await markAttendance(formData);
+      toast.success('Attendance marked successfully!');
       onSuccess && onSuccess();
       // Reset form
       setFormData({
@@ -43,7 +55,7 @@ const AttendanceForm = ({ onSuccess }) => {
         status: 'present',
       });
     } catch (err) {
-      // Error is handled by useMutation hook
+      // Error is handled by useMutation hook and shown via toast
     }
   };
 
@@ -68,12 +80,6 @@ const AttendanceForm = ({ onSuccess }) => {
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-lg font-medium text-gray-900 mb-6">Mark Attendance</h2>
-      
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-600 text-sm">{error}</p>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import authAPI from '../../services/auth';
 
 const RegisterPage = () => {
@@ -49,10 +50,13 @@ const RegisterPage = () => {
         password: formData.password,
       });
       
+      toast.success('Registration successful! Please log in.');
+      
       // Redirect to login page after successful registration
       navigate('/login');
     } catch (err) {
       const errorMessage = err.response?.data?.detail || 'Registration failed';
+      toast.error(errorMessage);
       setErrors({ general: errorMessage });
     } finally {
       setLoading(false);

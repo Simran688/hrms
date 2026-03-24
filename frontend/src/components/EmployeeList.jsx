@@ -1,18 +1,20 @@
 import React from 'react';
+import { toast } from 'react-toastify';
 import { employeeAPI } from '../services/api';
 import { useApi, useMutation } from '../hooks/useApi';
 
 const EmployeeList = ({ onEdit, refreshTrigger }) => {
   const { data: employees, loading, error, refetch } = useApi(employeeAPI.getAll, [refreshTrigger]);
-  const { mutate: deleteEmployee, loading: deleting } = useMutation(employeeAPI.delete);
+  const { mutate: deleteEmployee, loading: deleting, error: deleteError } = useMutation(employeeAPI.delete);
 
   const handleDelete = async (employeeId) => {
     if (window.confirm('Are you sure you want to delete this employee?')) {
       try {
         await deleteEmployee(employeeId);
+        toast.success('Employee deleted successfully!');
         refetch();
       } catch (err) {
-        // Error is handled by useMutation hook
+        toast.error(deleteError || 'Failed to delete employee');
       }
     }
   };
